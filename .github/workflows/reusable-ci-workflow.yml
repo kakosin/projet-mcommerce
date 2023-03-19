@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  build:
+  build_unit_test_and_package:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -20,3 +20,7 @@ jobs:
         cache: maven
     - name: Maven Build
       run: mvn -B package --file ./${{ inputs.project }}/pom.xml -Dtest=UnitTests -DfailIfNoTests=false
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn --batch-mode deploy -Dmaven.wagon.http.pool=false --file ./${{ inputs.project }}/pom.xml -DskipTests
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
