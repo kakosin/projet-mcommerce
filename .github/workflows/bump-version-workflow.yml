@@ -1,0 +1,44 @@
+name: Bump Version Workflow
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  bump_version_eureka_server:
+    uses: ./.github/workflows/reusable-bump-version-workflow.yml
+    with:
+      project: eureka-server
+
+  bump_version_config_server:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: config-server
+
+  bump_version_microservice_produits:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: microservice-produits
+
+  bump_version_microservice_commandes:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: microservice-commandes
+
+  bump_version_microservice_paiement:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: microservice-paiement
+
+  bump_version_client_ui:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: clientui
+
+  bump_version_api_gateway:
+    uses: ./.github/workflows/reusable-bump_version-workflow.yml
+    with:
+      project: api-gateway
