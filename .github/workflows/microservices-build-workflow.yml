@@ -1,4 +1,4 @@
-name: Main CI Workflow
+name: Build Workflow
 
 permissions:
   packages: write
@@ -11,36 +11,36 @@ on:
 
 jobs:
   build_eureka_server:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: eureka-server
 
   build_config_server:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: config-server
 
   build_microservice_produits:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: microservice-produits
 
   build_microservice_commandes:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: microservice-commandes
 
   build_microservice_paiement:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: microservice-paiement
 
   build_client_ui:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: clientui
 
   build_api_gateway:
-    uses: ./.github/workflows/reusable-ci-workflow.yml
+    uses: ./.github/workflows/reusable-build-workflow.yml
     with:
       project: api-gateway
