@@ -1,4 +1,4 @@
-name: Reusable Build Workflow
+name: Reusable Back-End Workflow
 
 on:
   workflow_call:
@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  build_unit_test:
+  run_unit_tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -18,11 +18,25 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Maven Build
-      run: mvn -B package --file ./${{ inputs.project }}/pom.xml -Dtest=UnitTests -DfailIfNoTests=false
+    - name: Maven Unit Test
+      run: mvn -B test --file ./${{ inputs.project }}/pom.xml -Dgroups=UnitTests
+
+  run_integration_tests:
+    needs: run_unit_tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Maven Integration Test
+        run: mvn -B test --file ./${{ inputs.project }}/pom.xml -Dgroups=IntegrationTests
 
   package:
-    needs: build_unit_test
+    needs: run_integration_tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
