@@ -18,6 +18,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+      - uses: browser-actions/setup-chrome@v1
+      - name: Set path to maven
+        id: mvn_path
+        run: |
+          echo "/opt/maven/bin" >> $MAVEN_HOME
       - name: Maven Acceptance Test
         run: mvn -B test --file ./${{ inputs.project }}/pom.xml -Dgroups=AcceptanceTests
 
