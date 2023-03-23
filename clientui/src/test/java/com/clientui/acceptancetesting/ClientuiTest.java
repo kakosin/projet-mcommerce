@@ -6,6 +6,7 @@ import com.clientui.acceptancetesting.util.Utils;
 import io.github.bonigarcia.seljup.SeleniumJupiter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
@@ -21,13 +22,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 
+@Tag("AcceptanceTests")
 @SpringBootTest(classes = { ClientUiApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
 @EnableConfigurationProperties
 @ExtendWith(SeleniumJupiter.class)
 @TestPropertySource(locations = "classpath:application-at.properties")
 @ContextConfiguration(initializers = { EurekaContainerConfig.Initializer.class })
-public class ClientuiAT {
+public class ClientuiTest {
 
     private static boolean isMicroServicesStarted = false;
 
