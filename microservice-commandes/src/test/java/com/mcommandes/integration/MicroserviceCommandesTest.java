@@ -8,6 +8,7 @@ import com.mcommandes.model.Commande;
 import com.mcommandes.web.controller.CommandeController;
 import com.mcommandes.web.exceptions.CommandeNotFoundException;
 import com.mcommandes.web.exceptions.ImpossibleAjouterCommandeException;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,23 +23,20 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.containsString;
 
+@Tag("IntegrationTests")
 @SpringBootTest(classes = {McommandesApplication.class},
         properties = { "spring.cloud.config.enabled:false"},
         webEnvironment = RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-it.properties")
 @AutoConfigureMockMvc
-public class MicroserviceCommandesIT {
+public class MicroserviceCommandesTest {
 
     @Autowired
     private MockMvc mockMvc;

@@ -6,10 +6,7 @@ import com.mproduits.dao.ProductDao;
 import com.mproduits.model.Product;
 import com.mproduits.web.controller.ProductController;
 import com.mproduits.web.exceptions.ProductNotFoundException;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,7 +16,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,13 +28,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.containsString;
 
+@Tag("IntegrationTests")
 @SpringBootTest(classes = {MproduitsApplication.class},
         properties = { "spring.cloud.config.enabled:false"},
         webEnvironment = RANDOM_PORT)
 @TestPropertySource(locations = "classpath:application-it.properties")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class MicroserviceProduitsIT {
+public class MicroserviceProduitsTest {
 
     @Autowired
     private MockMvc mockMvc;
