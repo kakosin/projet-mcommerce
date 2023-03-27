@@ -22,7 +22,7 @@ jobs:
       - name: Set path to maven
         id: mvn_path
         run: |
-          echo "/opt/maven/bin" >> $MAVEN_HOME
+          echo "MAVEN_HOME=/opt/maven/bin" >> $GITHUB_ENV
       - name: Maven Acceptance Test
         run: mvn -B test --file ./${{ inputs.project }}/pom.xml -Dgroups=AcceptanceTests
 
