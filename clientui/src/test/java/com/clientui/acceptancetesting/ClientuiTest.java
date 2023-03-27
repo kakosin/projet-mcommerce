@@ -3,14 +3,25 @@ package com.clientui.acceptancetesting;
 import com.clientui.ClientUiApplication;
 import com.clientui.acceptancetesting.config.EurekaContainerConfig;
 import com.clientui.acceptancetesting.util.Utils;
-import io.github.bonigarcia.seljup.SeleniumJupiter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+//import io.github.bonigarcia.seljup.SeleniumJupiter;
+//import io.github.bonigarcia.seljup.SeleniumJupiter;
+//import io.github.bonigarcia.seljup.Arguments;
+//import io.github.bonigarcia.seljup.DriverCapabilities;
+//import io.github.bonigarcia.seljup.Options;
+//import io.github.bonigarcia.seljup.SeleniumJupiter;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+//import org.openqa.selenium.By;
+//import org.openqa.selenium.WebDriver;
+//import org.openqa.selenium.chrome.ChromeDriver;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,23 +31,38 @@ import org.springframework.test.context.TestPropertySource;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 
 @Tag("AcceptanceTests")
 @SpringBootTest(classes = { ClientUiApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
 @EnableConfigurationProperties
-@ExtendWith(SeleniumJupiter.class)
+//@ExtendWith(SeleniumJupiter.class)
 @TestPropertySource(locations = "classpath:application-at.properties")
 @ContextConfiguration(initializers = { EurekaContainerConfig.Initializer.class })
 public class ClientuiTest {
+
+    static ChromeOptions options = new ChromeOptions();
+
+    WebDriver driver;
 
     private static boolean isMicroServicesStarted = false;
 
     private final String[] microServicesNames = {"microservice-clientui", "microservice-produits", "microservice-commandes", "microservice-paiement", "microservice-api-gateway", "config-server"};
 
+    @BeforeAll
+    static void beforeAll() throws Exception{
+        StopAll();
+        WebDriverManager.chromedriver().setup();
+        options.addArguments("--remote-allow-origins=*");
+    }
+
     @BeforeEach
     void beforeEach() throws Exception{
+
+        driver = new ChromeDriver(options);
+
         await().atMost(120, SECONDS).until(() -> EurekaContainerConfig.Initializer.eurekaServer.isRunning());
         if(!isMicroServicesStarted){
             String eurekaServerUrl = "http://localhost:"+ EurekaContainerConfig.Initializer.eurekaServer.getFirstMappedPort().toString();
@@ -49,11 +75,14 @@ public class ClientuiTest {
             Thread.sleep(45000);//Permet d'assurer que les clients sont connectés à Eureka server
             isMicroServicesStarted = true;
         }
-
     }
 
     @AfterAll
     private static void afterAll() throws Exception{
+        StopAll();
+    }
+
+    private static void StopAll() throws Exception{
         Utils.stopSpringbootMicroservice("../microservice-produits/pom.xml");
         Utils.stopSpringbootMicroservice("../microservice-commandes/pom.xml");
         Utils.stopSpringbootMicroservice("../microservice-paiement/pom.xml");
@@ -61,9 +90,8 @@ public class ClientuiTest {
         Utils.stopSpringbootMicroservice("../config-server/pom.xml");
     }
 
-
     @Test
-    void homeShouldHaveCorrectTitleAndCorrectHeaderAnd8Images(ChromeDriver driver) throws Exception{
+    void homeShouldHaveCorrectTitleAndCorrectHeaderAnd8Images() throws Exception{
         //given
         driver.get("http://localhost/mcommerce-ui");
         int expectedNumberOfImages = 8;
@@ -82,7 +110,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void detailProductPageShouldContainsAnImageAndADescription(ChromeDriver driver){
+    void detailProductPageShouldContainsAnImageAndADescription(){
         //given
         driver.get("http://localhost/mcommerce-ui");
         int expectedNumberOfImages = 1;
@@ -99,7 +127,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void fromDetailProductPageYouShouldBeAbleToReturnToHomePage(ChromeDriver driver){
+    void fromDetailProductPageYouShouldBeAbleToReturnToHomePage(){
         //given
         String expectedTitle = "Mcommerce";
         String expectedHeader = "Application Mcommerce";
@@ -117,7 +145,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void paymentPageShouldContainsADescription(ChromeDriver driver){
+    void paymentPageShouldContainsADescription(){
         //given
         String descriptionToFind = "Ici l'utilisateur sélectionne en temps normal un moyen de paiement et entre les informations de sa carte bancaire.";
         driver.get("http://localhost/mcommerce-ui");
@@ -132,7 +160,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void fromPaymentPageYouShouldBeAbleToReturnToHomePage(ChromeDriver driver){
+    void fromPaymentPageYouShouldBeAbleToReturnToHomePage(){
         //given
         String expectedTitle = "Mcommerce";
         String expectedHeader = "Application Mcommerce";
@@ -151,7 +179,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void confirmationPageShouldContainsADescription(ChromeDriver driver){
+    void confirmationPageShouldContainsADescription(){
         //given
         String descriptionToFind = "Paiement Accepté";
         driver.get("http://localhost/mcommerce-ui");
@@ -167,7 +195,7 @@ public class ClientuiTest {
     }
 
     @Test
-    void fromConfirmationPageYouShouldBeAbleToReturnToHomePage(ChromeDriver driver){
+    void fromConfirmationPageYouShouldBeAbleToReturnToHomePage(){
         //given
         String expectedTitle = "Mcommerce";
         String expectedHeader = "Application Mcommerce";
