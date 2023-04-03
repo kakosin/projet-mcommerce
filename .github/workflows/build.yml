@@ -87,3 +87,38 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package --file microservice-commandes/pom.xml -DskipTests=true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo pip3 install awscli
+      - name: Upload JAR to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2 # Replace with your region
+          BUCKET_NAME: mcommerce-microservice-commandes # Replace with your bucket name
+          ARTIFACT_NAME: microservice-commandes.jar # Replace with your artifact name
+        run: |
+          aws s3 cp microservice-commandes/target/${{ env.ARTIFACT_NAME }} s3://${{ env.BUCKET_NAME }}/latest/${{ env.ARTIFACT_NAME }}
+      - name: Deploy to EC2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2 # Replace with your region
+          BUCKET_NAME: mcommerce-microservice-commandes # Replace with your bucket name
+          ARTIFACT_NAME: microservice-commandes.jar # Replace with your artifact name
+          INSTANCE_ID: i-0f5200a133151f7d0 # Replace with your EC2 instance ID
+        run: |
+          aws s3 cp s3://${{ env.BUCKET_NAME }}/latest/${{ env.ARTIFACT_NAME }} /tmp/${{ env.ARTIFACT_NAME }}
+          ssh -o "StrictHostKeyChecking no" ec2-user@${{ env.INSTANCE_ID }} "sudo systemctl stop your-service-name"
+          scp -o "StrictHostKeyChecking no" /tmp/${{ env.ARTIFACT_NAME }} ec2-user@${{ env.INSTANCE_ID }}:/tmp/${{ env.ARTIFACT_NAME }}
+          ssh -o "StrictHostKeyChecking no" ec2-user@${{ env.INSTANCE_ID }} "sudo mv /tmp/${{ env.ARTIFACT_NAME }} /opt/microservice-commandes/${{ env.ARTIFACT_NAME }}"
+          ssh -o "StrictHostKeyChecking no" ec2-user@${{ env.INSTANCE_ID }} "sudo systemctl start your-service-name"
+  
