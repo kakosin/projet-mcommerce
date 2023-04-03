@@ -1,0 +1,140 @@
+name: Java CI/CD Pipeline
+
+on:
+  push:
+    branches: [test-main]
+  pull_request:
+    branches: [test-main]
+
+jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: test-main
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Static Code Analysis with Checkstyle
+        run: mvn checkstyle:checkstyle --file microservice-commandes/pom.xml
+
+      - name: Upload Checkstyle Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: checkstyle-results
+          path: microservice-commandes/target/checkstyle-result.xml
+
+  run_unit_tests:
+    runs-on: ubuntu-latest
+    needs: static-analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: test-main
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Run unit tests
+        run: mvn -B test -Dtest=CommandeControllerTest --file microservice-commandes/pom.xml
+
+  run_integration_tests:
+    runs-on: ubuntu-latest
+    needs: static-analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: test-main
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Run integration tests
+        run: mvn -B test -Dtest=MicroserviceCommandesIT --file microservice-commandes/pom.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [run_unit_tests, run_integration_tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: test-main
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Build with Maven
+        run: mvn -B package --file microservice-commandes/pom.xml -DskipTests=true
+
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: microservice-commandes
+          path: microservice-commandes/target/microservice-commandes-1.0-SNAPSHOT.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          sudo pip3 install awscli
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: microservice-commandes
+          path: microservice-commandes/target/
+      - name: Upload JAR to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2 # Replace with your region
+          BUCKET_NAME: mcommerce-microservice-commandes # Replace with your bucket name
+          ARTIFACT_NAME: microservice-commandes-1.0-SNAPSHOT.jar # Replace with your artifact name
+        run: |
+          aws s3 cp microservice-commandes/target/${{ env.ARTIFACT_NAME }} s3://${{ env.BUCKET_NAME }}/latest/${{ env.ARTIFACT_NAME }}
+      - name: Write SSH key to temporary file
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem && chmod 400 key.pem
+      - name: Deploy to EC2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-2 # Replace with your region
+          BUCKET_NAME: mcommerce-microservice-commandes # Replace with your bucket name
+          ARTIFACT_NAME: microservice-commandes-1.0-SNAPSHOT.jar # Replace with your artifact name
+          PUBLIC_IP: 3.144.251.131 # Replace with your EC2 instance ID
+        run: |
+          aws s3 cp s3://${{ env.BUCKET_NAME }}/latest/${{ env.ARTIFACT_NAME }} /tmp/${{ env.ARTIFACT_NAME }}
+          scp -o "StrictHostKeyChecking no" -i key.pem /tmp/${{ env.ARTIFACT_NAME }} ec2-user@${{ env.PUBLIC_IP }}:/tmp/${{ env.ARTIFACT_NAME }}
+          ssh -o "StrictHostKeyChecking no" -i key.pem ec2-user@${{ env.PUBLIC_IP }} "sudo systemctl stop mcommerce-microservice-commandes"
+          ssh -o "StrictHostKeyChecking no" -i key.pem ec2-user@${{ env.PUBLIC_IP }} "sudo mv /tmp/${{ env.ARTIFACT_NAME }} /opt/microservice-commandes/${{ env.ARTIFACT_NAME }}"
+          ssh -o "StrictHostKeyChecking no" -i key.pem ec2-user@${{ env.PUBLIC_IP }} "sudo systemctl start mcommerce-microservice-commandes"
+      - name: Remove temporary SSH key file
+        run: rm -f key.pem
+
