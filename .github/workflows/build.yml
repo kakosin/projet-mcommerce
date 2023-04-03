@@ -119,12 +119,6 @@ jobs:
           ARTIFACT_NAME: microservice-commandes-1.0-SNAPSHOT.jar # Replace with your artifact name
         run: |
           aws s3 cp microservice-commandes/target/${{ env.ARTIFACT_NAME }} s3://${{ env.BUCKET_NAME }}/latest/${{ env.ARTIFACT_NAME }}
-      - name: Install ssh client
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
-      - name: Add SSH private key to agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Write SSH key to temporary file
         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem && chmod 400 key.pem
       - name: Deploy to EC2
