@@ -31,9 +31,28 @@ jobs:
           name: checkstyle-results
           path: microservice-commandes/target/checkstyle-result.xml
 
-  build:
+  test:
     runs-on: ubuntu-latest
     needs: static-analysis
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: test-main
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Run tests
+        run: mvn -B test -Dtest=CommandeControllerTest --file microservice-commandes/pom.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
 
     steps:
       - name: Checkout code
