@@ -24,7 +24,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ inputs.project }}-checkstyle-results
-          path: ./${{ inputs.project }}/target/checkstyle-result.xml
+          path: ./${{ inputs.project }}/target/site
 
   run_unit_tests:
     needs: run_static_analysis
