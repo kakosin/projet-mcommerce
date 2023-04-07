@@ -39,6 +39,16 @@ jobs:
         cache: maven
     - name: Maven Unit Test
       run: mvn -B test --file ./${{ inputs.project }}/pom.xml -Dgroups=UnitTests
+    - name: Generate JaCoCo Badge
+      uses: cicirello/jacoco-badge-generator@v2
+      with:
+        jacoco-csv-file: ${{ inputs.project }}/target/site/jacoco/jacoco.csv
+        generate-branches-badge: true
+        generate-coverage-badge: true
+        fail-if-coverage-less-than: 80
+        fail-if-branches-less-than: 90
+        fail-on-coverage-decrease: true
+        fail-on-branches-decrease: true
 
   run_integration_tests:
     needs: run_unit_tests
