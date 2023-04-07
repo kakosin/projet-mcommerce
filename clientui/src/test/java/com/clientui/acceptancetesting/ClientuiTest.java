@@ -3,25 +3,12 @@ package com.clientui.acceptancetesting;
 import com.clientui.ClientUiApplication;
 import com.clientui.acceptancetesting.config.EurekaContainerConfig;
 import com.clientui.acceptancetesting.util.Utils;
-//import io.github.bonigarcia.seljup.SeleniumJupiter;
-//import io.github.bonigarcia.seljup.SeleniumJupiter;
-//import io.github.bonigarcia.seljup.Arguments;
-//import io.github.bonigarcia.seljup.DriverCapabilities;
-//import io.github.bonigarcia.seljup.Options;
-//import io.github.bonigarcia.seljup.SeleniumJupiter;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-//import org.openqa.selenium.By;
-//import org.openqa.selenium.WebDriver;
-//import org.openqa.selenium.chrome.ChromeDriver;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,14 +18,12 @@ import org.springframework.test.context.TestPropertySource;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 
 @Tag("AcceptanceTests")
 @SpringBootTest(classes = { ClientUiApplication.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
 @EnableConfigurationProperties
-//@ExtendWith(SeleniumJupiter.class)
 @TestPropertySource(locations = "classpath:application-at.properties")
 @ContextConfiguration(initializers = { EurekaContainerConfig.Initializer.class })
 public class ClientuiTest {
@@ -56,6 +41,8 @@ public class ClientuiTest {
         StopAll();
         WebDriverManager.chromedriver().setup();
         options.addArguments("--remote-allow-origins=*");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--headless");
     }
 
     @BeforeEach
@@ -78,7 +65,7 @@ public class ClientuiTest {
     }
 
     @AfterAll
-    private static void afterAll() throws Exception{
+    static void afterAll() throws Exception{
         StopAll();
     }
 
@@ -213,6 +200,4 @@ public class ClientuiTest {
         assertThat(title).contains(expectedTitle);
         assertThat(header).isEqualTo(expectedHeader);
     }
-
-
 }
